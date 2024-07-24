@@ -1,0 +1,21 @@
+# Composer dependencies
+/vendor/
+/composer.lock
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Node modules (if you have any JS dependencies)
+/node_modules/
+
+# PHPStorm project files
+.idea/
+
+# Eclipse project files
+.project
+
+# Miscellaneous
+*.log
+*.cache
+*.tmp

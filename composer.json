@@ -1,0 +1,23 @@
+{
+    "name": "davodm/dgcrypt-php",
+    "description": "A simple PHP library for encryption and decryption using AES-256-CBC to be usable in different language/devices.",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Dgcrypt\\": "src/"
+        }
+    },
+    "require": {
+        "php": ">=7.1"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9"
+    },
+    "authors": [
+        {
+            "name": "Davod",
+            "email": "i@davod.me"
+        }
+    ],
+    "minimum-stability": "stable"
+}
