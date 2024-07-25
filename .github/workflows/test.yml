@@ -1,0 +1,32 @@
+name: PHP Tests
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+      - master
+  pull_request:
+    branches:
+      - master
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          extensions: openssl
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest --ansi
+
+      - name: Run tests
+        run: composer test
