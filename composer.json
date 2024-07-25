@@ -8,7 +8,8 @@
         }
     },
     "require": {
-        "php": ">=7.1"
+        "php": ">=7.1",
+        "ext-openssl": "*"
     },
     "require-dev": {
         "phpunit/phpunit": "^9"
@@ -19,5 +20,6 @@
             "email": "i@davod.me"
         }
     ],
-    "minimum-stability": "stable"
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }
