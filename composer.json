@@ -20,6 +20,9 @@
             "email": "i@davod.me"
         }
     ],
+    "scripts": {
+        "test": "phpunit --configuration phpunit.xml"
+    },
     "minimum-stability": "dev",
     "prefer-stable": true
 }
