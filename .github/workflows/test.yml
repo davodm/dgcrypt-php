@@ -23,16 +23,10 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '7.4'
-          extensions: openssl, mbstring, json
+          extensions: openssl
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-suggest --ansi
-
-      - name: Check PHP version
-        run: php -v
-
-      - name: Check installed PHP extensions
-        run: php -m
 
       - name: Run tests
         run: composer test

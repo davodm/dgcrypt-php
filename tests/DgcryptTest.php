@@ -18,10 +18,10 @@ class DgcryptTest extends TestCase
     {
         $dgcrypt = new Dgcrypt('aes-256-cbc');
         $dgcrypt->setKey($this->key);
-        
+
         $encrypted = $dgcrypt->encrypt($this->originalText);
         $decrypted = $dgcrypt->decrypt($encrypted);
-        
+
         $this->assertEquals($this->originalText, $decrypted);
     }
 
@@ -29,10 +29,10 @@ class DgcryptTest extends TestCase
     {
         $dgcrypt = new Dgcrypt('aes-256-gcm');
         $dgcrypt->setKey($this->key);
-        
+
         $encrypted = $dgcrypt->encrypt($this->originalText);
         $decrypted = $dgcrypt->decrypt($encrypted);
-        
+
         $this->assertEquals($this->originalText, $decrypted);
     }
 
@@ -40,10 +40,10 @@ class DgcryptTest extends TestCase
     {
         $dgcrypt = new Dgcrypt('chacha20-poly1305');
         $dgcrypt->setKey($this->key);
-        
+
         $encrypted = $dgcrypt->encrypt($this->originalText);
         $decrypted = $dgcrypt->decrypt($encrypted);
-        
+
         $this->assertEquals($this->originalText, $decrypted);
     }
 
@@ -51,7 +51,7 @@ class DgcryptTest extends TestCase
     {
         $dgcrypt = new Dgcrypt('aes-256-gcm');
         $key = $dgcrypt->generateKey();
-        
+
         $this->assertEquals(32, strlen($key));
     }
 
@@ -60,8 +60,49 @@ class DgcryptTest extends TestCase
         $dgcrypt = new Dgcrypt('aes-256-gcm');
         $dgcrypt->setKey($this->key);
         $dgcrypt->setIV();
-        
+
         $encrypted = $dgcrypt->encrypt($this->originalText);
         $this->assertNotNull($encrypted);
+    }
+
+    public function testEncryptDecryptWithCustomIV()
+    {
+        $dgcrypt = new Dgcrypt('aes-256-gcm');
+        $dgcrypt->setKey($this->key);
+        $customIV = '123456789012'; // 12 bytes for GCM
+        $dgcrypt->setIV($customIV);
+
+        $encrypted = $dgcrypt->encrypt($this->originalText);
+        $decrypted = $dgcrypt->decrypt($encrypted);
+
+        $this->assertEquals($this->originalText, $decrypted);
+    }
+
+    public function testEncryptDecryptWithDifferentKeys()
+    {
+        $dgcrypt = new Dgcrypt('aes-256-gcm');
+        $dgcrypt->setKey($this->key);
+
+        $encrypted = $dgcrypt->encrypt($this->originalText);
+
+        $differentKey = '09876543210987654321098765432109';
+        $dgcrypt->setKey($differentKey);
+
+        $this->expectException(\Exception::class);
+        $dgcrypt->decrypt($encrypted);
+    }
+
+    public function testEncryptDecryptWithModifiedData()
+    {
+        $dgcrypt = new Dgcrypt('aes-256-gcm');
+        $dgcrypt->setKey($this->key);
+
+        $encrypted = $dgcrypt->encrypt($this->originalText);
+
+        // Modify encrypted data
+        $encrypted[10] = ($encrypted[10] === 'a') ? 'b' : 'a';
+
+        $this->expectException(\Exception::class);
+        $dgcrypt->decrypt($encrypted);
     }
 }
