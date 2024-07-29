@@ -9,8 +9,7 @@ namespace Dgcrypt;
 class Dgcrypt
 {
     private $iv;  // Initialization vector for encryption
-    private $key; // Secret key for encryption
-    private $tag; // Authentication tag for AES-GCM or ChaCha20-Poly1305
+    private $key; // Secret key for encryption and decryption
     private $cipherMethod; // Cipher method
 
     /**
@@ -65,15 +64,15 @@ class Dgcrypt
      */
     public function setIV(string $iv = null)
     {
+        $ivLength = openssl_cipher_iv_length($this->cipherMethod);
         if (empty($iv)) {
-            $ivLength = ($this->cipherMethod == 'aes-256-cbc') ? 16 : 12;
-            $iv = openssl_random_pseudo_bytes($ivLength);
+            $this->iv = openssl_random_pseudo_bytes($ivLength);
         } else {
-            if ((strlen($iv) !== 16 && $this->cipherMethod == 'aes-256-cbc') || (strlen($iv) !== 12 && $this->cipherMethod != 'aes-256-cbc')) {
-                throw new \Exception('IV should be 12 bytes for GCM or ChaCha20, 16 bytes for CBC');
+            if (strlen($iv) !== $ivLength) {
+                throw new \Exception("IV should be $ivLength bytes");
             }
+            $this->iv = $iv;
         }
-        $this->iv = $iv;
         return $this;
     }
 
@@ -115,7 +114,20 @@ class Dgcrypt
             $this->setIV();
         }
 
-        $encryptedString = openssl_encrypt($string, $this->cipherMethod, $this->key, OPENSSL_RAW_DATA, $this->iv, $this->tag);
+        $tag=null;
+
+        switch ($this->cipherMethod) {
+            case 'aes-256-cbc':
+                $encryptedString = openssl_encrypt($string, $this->cipherMethod, $this->key, OPENSSL_RAW_DATA, $this->iv);
+                break;
+            case 'aes-256-gcm':
+            case 'chacha20-poly1305':
+                $encryptedString = openssl_encrypt($string, $this->cipherMethod, $this->key, OPENSSL_RAW_DATA, $this->iv, $tag);
+                break;
+            default:
+                throw new \Exception('Unsupported cipher method');
+        }
+
         if ($encryptedString === false) {
             throw new \Exception('Encryption failed');
         }
@@ -124,7 +136,8 @@ class Dgcrypt
             $this->iv = null;
         }
 
-        $encryptedString = base64_encode($this->iv . $this->tag . $encryptedString);
+        $encryptedString = base64_encode($this->iv . $tag . $encryptedString);
+        
         return $encryptedString;
     }
 
@@ -144,18 +157,23 @@ class Dgcrypt
             throw new \Exception('Key for decrypting is not defined');
         }
 
+        $ivLength = openssl_cipher_iv_length($this->cipherMethod);
+
         $decodedString = base64_decode($string);
-        if ($decodedString === false || strlen($decodedString) <= 28) {
+        if ($decodedString === false) {
             throw new \Exception('Encoded string is manipulated or corrupted');
         }
 
-        $ivLength = ($this->cipherMethod == 'aes-256-cbc') ? 16 : 12;
         $iv = substr($decodedString, 0, $ivLength);
-        $tagLength = ($this->cipherMethod != 'aes-256-cbc') ? 16 : 0;
-        $tag = ($tagLength > 0) ? substr($decodedString, $ivLength, $tagLength) : '';
-        $encryptedString = substr($decodedString, $ivLength + $tagLength);
+        if ($this->cipherMethod === 'aes-256-gcm' || $this->cipherMethod === 'chacha20-poly1305') {
+            $tagLength = 16; // Tag length for GCM and ChaCha20-Poly1305
+            $tag = substr($decodedString, $ivLength, $tagLength);
+            $encryptedData = substr($decodedString, $ivLength + $tagLength);
+        } else {
+            $encryptedData = substr($decodedString, $ivLength);
+        }
 
-        $decryptedString = openssl_decrypt($encryptedString, $this->cipherMethod, $this->key, OPENSSL_RAW_DATA, $iv, $tag);
+        $decryptedString = openssl_decrypt($encryptedData, $this->cipherMethod, $this->key, OPENSSL_RAW_DATA, $iv, $tag ?? null);
         if ($decryptedString === false) {
             throw new \Exception('Decryption failed');
         }
