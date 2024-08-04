@@ -100,9 +100,11 @@ class DgcryptTest extends TestCase
         $encrypted = $dgcrypt->encrypt($this->originalText);
 
         // Modify encrypted data
-        $encrypted[10] = ($encrypted[10] === 'a') ? 'b' : 'a';
+        $decodedString = base64_decode($encrypted);
+        $decodedString[10] = ($decodedString[10] === 'a') ? 'b' : 'a';
+        $modifiedEncrypted = base64_encode($decodedString);
 
         $this->expectException(\Exception::class);
-        $dgcrypt->decrypt($encrypted);
+        $dgcrypt->decrypt($modifiedEncrypted);
     }
 }

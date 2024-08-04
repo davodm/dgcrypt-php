@@ -33,8 +33,8 @@ use Dgcrypt\Dgcrypt;
 // Initialize the Dgcrypt class with the desired encryption method
 $dgcrypt = new Dgcrypt('aes-256-gcm'); // Can be 'aes-256-cbc', 'aes-256-gcm', or 'chacha20-poly1305'
 
-// Set a 32-character secret key
-$dgcrypt->setKey('your-32-character-long-key');
+// Set a secret key
+$dgcrypt->setKey('your-secret key');
 ```
 
 ### Encrypting Data on the Backend:
@@ -50,7 +50,7 @@ echo $encrypted;
 ### Decrypting Data on the Backend:
 ```php
 // Decrypt the previously encrypted string
-$decrypted = $dgcrypt->decrypt($encrypted);
+$decrypted = $dgcrypt->setCipherMethod('aes-256-cbc')->decrypt($encrypted);
 
 // Output the decrypted string
 echo $decrypted;
@@ -62,7 +62,7 @@ echo $decrypted;
 $generatedKey = $dgcrypt->generateKey();
 
 // Output the generated key
-echo bin2hex($generatedKey); // Display the key in hexadecimal format
+echo $generatedKey; // Display the hexadecimal key
 ```
 
 ### Setting the Initialization Vector (IV):
